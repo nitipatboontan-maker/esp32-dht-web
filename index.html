@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>ESP32 Climate Monitor</title>
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg,#1cb5e0,#00f2a6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.container{
+  max-width:420px;
+  width:100%;
+}
+
+.card{
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(10px);
+  border-radius:20px;
+  padding:25px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+  color:#003333;
+}
+
+.card h1{
+  margin:0 0 15px;
+  color:#004d40;
+}
+
+.value{
+  font-size:30px;
+  margin:10px 0;
+  font-weight:bold;
+}
+
+.time{
+  font-size:14px;
+  margin-top:10px;
+  color:#004d40;
+}
+
+/* table */
+.table-card{
+  margin-top:20px;
+  background: rgba(255,255,255,0.3);
+  backdrop-filter: blur(8px);
+  border-radius:15px;
+  padding:15px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+th,td{
+  padding:8px;
+  text-align:center;
+}
+
+th{
+  background: rgba(0,150,136,0.3);
+  color:#003333;
+}
+
+tr:nth-child(even){
+  background: rgba(255,255,255,0.2);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- CURRENT DATA -->
+  <div class="card">
+    <h1>💧 ESP32 Climate</h1>
+    <div class="value">🌡 <span id="temp">--</span> °C</div>
+    <div class="value">💦 <span id="hum">--</span> %</div>
+    <div class="time">⏰ <span id="time">--</span></div>
+  </div>
+
+  <!-- HISTORY TABLE -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>เวลา</th>
+          <th>อุณหภูมิ (°C)</th>
+          <th>ความชื้น (%)</th>
+        </tr>
+      </thead>
+      <tbody id="history">
+        <tr><td colspan="3">กำลังโหลด...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const apiURL =
+"https://script.google.com/macros/s/AKfycbyCBwMv6BraiScKMnnvg70tDGUVmmlbWoz_ydN0q7Q/exec";
+
+async function loadData(){
+  try{
+    const r = await fetch(apiURL);
+    const d = await r.json();
+
+    // current
+    temp.innerText = d.temp;
+    hum.innerText  = d.hum;
+    time.innerText = d.time;
+
+    // history
+    const tb = document.getElementById("history");
+    tb.innerHTML = "";
+    d.history.forEach(row=>{
+      tb.innerHTML += `
+        <tr>
+          <td>${row.time}</td>
+          <td>${row.temp}</td>
+          <td>${row.hum}</td>
+        </tr>`;
+    });
+
+  }catch(e){
+    console.log("error");
+  }
+}
+
+loadData();
+setInterval(loadData,5000);
+</script>
+
+</body>
+</html>
