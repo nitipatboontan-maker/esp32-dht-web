@@ -1,147 +1,59 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>ESP32 Climate Monitor</title>
-
-<style>
-body{
-  margin:0;
-  min-height:100vh;
-  font-family: "Segoe UI", sans-serif;
-  background: linear-gradient(135deg,#1cb5e0,#00f2a6);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-}
-
-.container{
-  max-width:420px;
-  width:100%;
-}
-
-.card{
-  background: rgba(255,255,255,0.25);
-  backdrop-filter: blur(10px);
-  border-radius:20px;
-  padding:25px;
-  text-align:center;
-  box-shadow:0 10px 30px rgba(0,0,0,0.2);
-  color:#003333;
-}
-
-.card h1{
-  margin:0 0 15px;
-  color:#004d40;
-}
-
-.value{
-  font-size:30px;
-  margin:10px 0;
-  font-weight:bold;
-}
-
-.time{
-  font-size:14px;
-  margin-top:10px;
-  color:#004d40;
-}
-
-/* table */
-.table-card{
-  margin-top:20px;
-  background: rgba(255,255,255,0.3);
-  backdrop-filter: blur(8px);
-  border-radius:15px;
-  padding:15px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-
-th,td{
-  padding:8px;
-  text-align:center;
-}
-
-th{
-  background: rgba(0,150,136,0.3);
-  color:#003333;
-}
-
-tr:nth-child(even){
-  background: rgba(255,255,255,0.2);
-}
-</style>
+  <meta charset="UTF-8">
+  <title>ESP32 DHT11 Monitor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(120deg, #ccefff, #ccffd9);
+      text-align: center;
+      padding: 30px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 320px;
+      margin: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    h1 { color: #0099cc; }
+    .value { font-size: 24px; color: #00aa66; }
+  </style>
 </head>
-
 <body>
 
-<div class="container">
-
-  <!-- CURRENT DATA -->
   <div class="card">
-    <h1>💧 ESP32 Climate</h1>
-    <div class="value">🌡 <span id="temp">--</span> °C</div>
-    <div class="value">💦 <span id="hum">--</span> %</div>
-    <div class="time">⏰ <span id="time">--</span></div>
-  </div>
+    <h1>🌡 ESP32 DHT11</h1>
+    <p>อุณหภูมิ</p>
+    <div class="value" id="temp">-- °C</div>
 
-  <!-- HISTORY TABLE -->
-  <div class="table-card">
-    <table>
-      <thead>
-        <tr>
-          <th>เวลา</th>
-          <th>อุณหภูมิ (°C)</th>
-          <th>ความชื้น (%)</th>
-        </tr>
-      </thead>
-      <tbody id="history">
-        <tr><td colspan="3">กำลังโหลด...</td></tr>
-      </tbody>
-    </table>
-  </div>
+    <p>ความชื้น</p>
+    <div class="value" id="hum">-- %</div>
 
-</div>
+    <p>อัปเดตล่าสุด</p>
+    <div id="time">--</div>
+  </div>
 
 <script>
-const apiURL =
-"https://script.google.com/macros/s/AKfycbyCBwMv6BraiScKMnnvg70tDGUVmmlbWoz_ydN0q7Q/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwG-zKhbt99vCu2rESCqgMjchlUSYCHnjxNwTVtbsZDMP9b5-hjimStbbyRuDuNay8k/exec";
 
-async function loadData(){
-  try{
-    const r = await fetch(apiURL);
-    const d = await r.json();
+async function loadData() {
+  try {
+    const res = await fetch(GAS_URL);
+    const data = await res.json();
 
-    // current
-    temp.innerText = d.temp;
-    hum.innerText  = d.hum;
-    time.innerText = d.time;
-
-    // history
-    const tb = document.getElementById("history");
-    tb.innerHTML = "";
-    d.history.forEach(row=>{
-      tb.innerHTML += `
-        <tr>
-          <td>${row.time}</td>
-          <td>${row.temp}</td>
-          <td>${row.hum}</td>
-        </tr>`;
-    });
-
-  }catch(e){
-    console.log("error");
+    document.getElementById("temp").innerText = data.temp + " °C";
+    document.getElementById("hum").innerText  = data.hum + " %";
+    document.getElementById("time").innerText = data.time;
+  } catch (e) {
+    console.log("โหลดข้อมูลไม่ได้", e);
   }
 }
 
 loadData();
-setInterval(loadData,5000);
+setInterval(loadData, 60000); // รีเฟรชทุก 1 นาที
 </script>
 
 </body>
